@@ -3,14 +3,14 @@ from .config import Config
 from .extensions import db, jwt, migrate, limiter, cors
 from .routes import auth, files_bp, book_bp, subscriber_bp, ask_bp, main_bp
 from flask_cors import CORS
-import os
-import sys
+# import os
+# import sys
 
-def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller exe"""
-    if hasattr(sys, '_MEIPASS'):
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
+# def resource_path(relative_path):
+#     """Get absolute path to resource, works for dev and for PyInstaller exe"""
+#     if hasattr(sys, '_MEIPASS'):
+#         return os.path.join(sys._MEIPASS, relative_path)
+#     return os.path.join(os.path.abspath("."), relative_path)
 
 def create_app():
     app = Flask(__name__, static_folder='../static', static_url_path='')
@@ -21,10 +21,8 @@ def create_app():
     migrate.init_app(app, db)
     limiter.init_app(app)
     cors.init_app(app)
-    CORS(app, supports_credentials=True)
-
-    CORS(app, resources={r"/book/*": {"origins": "http://localhost:3000"}})
-
+    CORS(app)
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(book_bp, url_prefix='/book')
     app.register_blueprint(files_bp, url_prefix='/files')

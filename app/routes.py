@@ -25,17 +25,17 @@ subscriber_bp = Blueprint('subscribe', __name__)
 ask_bp = Blueprint('ask', __name__)
 main_bp = Blueprint('main', __name__)
 
-@main_bp.route("/")
-def home():
-    return send_from_directory(current_app.static_folder, 'index.html')
-
-# Catch-all to let React Router handle routing
-@main_bp.route('/<path:path>')
-def catch_all(path):
-    try:
-        return send_from_directory(current_app.static_folder, path)
-    except:
-        return send_from_directory(current_app.static_folder, 'index.html')
+# @main_bp.route("/")
+# def home():
+#     return send_from_directory(current_app.static_folder, 'index.html')
+#
+# # Catch-all to let React Router handle routing
+# @main_bp.route('/<path:path>')
+# def catch_all(path):
+#     try:
+#         return send_from_directory(current_app.static_folder, path)
+#     except:
+#         return send_from_directory(current_app.static_folder, 'index.html')
 
 
 @auth.route('/pub/register', methods=['POST'])
