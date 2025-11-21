@@ -886,16 +886,21 @@ def delete_highlight(highlight_id):
     if not highlight:
         return jsonify({"error": "Highlight not found"}), 404
 
+
+
     # Make sure the highlight belongs to this reader
     if highlight.reader_id != int(reader_id):
         return jsonify({"error": "Unauthorized to delete this highlight"}), 403
 
+    book_id = highlight.book_id
     # Delete highlight
     db.session.delete(highlight)
     db.session.commit()
 
-    return jsonify({"message": "Highlight deleted successfully"}), 200
-
+    return jsonify({
+        "message": "Highlight deleted successfully",
+        "book_id": book_id
+    }), 200
 
 @book_bp.route('/reader/get_highlights/<int:book_id>', methods=['GET'])
 @jwt_required()
@@ -992,14 +997,18 @@ def delete_note(note_id):
         return jsonify({"error": "Note not found"}), 404
 
     # Verify the note belongs to the logged-in reader
-    if note.reader_id != reader_id:
-        return jsonify({"error": "Unauthorized to delete this note"}), 403
+    if note.reader_id != int(reader_id):
+        return jsonify({"error": "Unauthorized to delete this note"}), 40
 
+    book_id = note.book_id
     # Delete note
     db.session.delete(note)
     db.session.commit()
 
-    return jsonify({"message": "Note deleted successfully"}), 200
+    return jsonify({
+        "message": "Note deleted successfully",
+        "book_id": book_id
+    }), 200
 
 
 
