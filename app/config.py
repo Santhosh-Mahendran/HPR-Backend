@@ -1,17 +1,16 @@
 import os
 from dotenv import load_dotenv
 import base64
-import app.constant as constant
 
 load_dotenv()
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = constant.DATABASE_URL
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = constant.JWT_SECRET_KEY
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = 7 * 24 * 60 * 60  # 7 days
-    FILE_ENCRYPTION_KEY = base64.b64decode(constant.FILE_ENCRYPTION_KEY)
-    AI_API_KEY = constant.AI_API_KEY
+    FILE_ENCRYPTION_KEY = base64.b64decode(os.environ.get('FILE_ENCRYPTION_KEY'))
+    AI_API_KEY = os.environ.get('AI_API_KEY')
 
     # Determine storage path
     if os.getenv('VERCEL'):

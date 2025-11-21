@@ -6,8 +6,6 @@ from .models import Publisher, Category, Book, Reader, Highlight, Note, BooksPur
 from .extensions import db, limiter
 from datetime import datetime
 import os
-from cryptography.fernet import Fernet
-import time
 import zipfile
 from lxml import etree
 
@@ -870,6 +868,27 @@ def add_highlight():
         "message": "Highlight added successfully"
     }), 201
 
+@book_bp.route('/reader/delete_highlight/<int:highlight_id>', methods=['DELETE'])
+@jwt_required()
+def delete_highlight(highlight_id):
+    # Get reader_id from JWT token
+    reader_id = get_jwt_identity()
+
+    # Check if highlight exists
+    highlight = Highlight.query.get(highlight_id)
+    if not highlight:
+        return jsonify({"error": "Highlight not found"}), 404
+
+    # Make sure the highlight belongs to this reader
+    if highlight.reader_id != reader_id:
+        return jsonify({"error": "Unauthorized to delete this highlight"}), 403
+
+    # Delete highlight
+    db.session.delete(highlight)
+    db.session.commit()
+
+    return jsonify({"message": "Highlight deleted successfully"}), 200
+
 
 @book_bp.route('/reader/get_highlights/<int:book_id>', methods=['GET'])
 @jwt_required()
@@ -897,6 +916,7 @@ def get_highlights(book_id):
         highlights_data = []
         for highlight in highlights:
             highlights_data.append({
+                "id": highlight.hl_id,
                 "text": highlight.text,
                 "highlight_range": highlight.highlight_range,
                 "color": highlight.color
@@ -951,6 +971,29 @@ def add_note():
     return jsonify({
         "message": "Note added successfully"
     }), 201
+
+
+@book_bp.route('/reader/delete_note/<int:note_id>', methods=['DELETE'])
+@jwt_required()
+def delete_note(note_id):
+    # Get reader_id from JWT token
+    reader_id = get_jwt_identity()
+
+    # Check if the note exists
+    note = Note.query.get(note_id)
+    if not note:
+        return jsonify({"error": "Note not found"}), 404
+
+    # Verify the note belongs to the logged-in reader
+    if note.reader_id != reader_id:
+        return jsonify({"error": "Unauthorized to delete this note"}), 403
+
+    # Delete note
+    db.session.delete(note)
+    db.session.commit()
+
+    return jsonify({"message": "Note deleted successfully"}), 200
+
 
 
 @book_bp.route('/reader/get_notes/<int:book_id>', methods=['GET'])
@@ -1311,12 +1354,37 @@ def delete_wishlist(wishlist_id):
 
 @book_bp.route('/stream/<filename>')
 @jwt_required()
-def serve_epub2(filename):
+def serve_epub(filename):
 
     reader_id = get_jwt_identity()
     reader = Reader.query.get(reader_id)
     if not reader:
         return jsonify({"error": "Reader not found"}), 404
+    file_path = os.path.join(current_app.config['FILE_UPLOAD_FOLDER'], filename)
+
+    if not os.path.isfile(file_path):
+        return {"error": "File not found"}, 404
+
+    try:
+        with open(file_path, "rb") as f:
+            encrypted_data = f.read()
+
+        decrypted_data = decrypt_file(encrypted_data, current_app.config['FILE_ENCRYPTION_KEY'])
+
+        return Response(decrypted_data, content_type='application/epub+zip')
+
+    except Exception as e:
+        return {"error": f"Decryption failed: {str(e)}"}, 500
+
+
+@book_bp.route('/pub/stream/<filename>')
+@jwt_required()
+def serve_epub2(filename):
+
+    publisher_id = get_jwt_identity()
+    publisher = Publisher.query.get(publisher_id)
+    if not publisher:
+        return jsonify({"error": "Publisher not found"}), 404
     file_path = os.path.join(current_app.config['FILE_UPLOAD_FOLDER'], filename)
 
     if not os.path.isfile(file_path):

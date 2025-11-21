@@ -1,12 +1,11 @@
 from openai import OpenAI
 import os
-import app.constant as constant
 
 
 # Initialize OpenRouter client
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key= constant.AI_API_KEY,
+    api_key= os.environ.get('AI_API_KEY'),
 )
 
 def ask_openrouter(question, context):
