@@ -893,13 +893,15 @@ def delete_highlight(highlight_id):
         return jsonify({"error": "Unauthorized to delete this highlight"}), 403
 
     book_id = highlight.book_id
+    cfi = highlight.highlight_range
     # Delete highlight
     db.session.delete(highlight)
     db.session.commit()
 
     return jsonify({
         "message": "Highlight deleted successfully",
-        "book_id": book_id
+        "book_id": book_id,
+        "cfi": cfi
     }), 200
 
 @book_bp.route('/reader/get_highlights/<int:book_id>', methods=['GET'])
@@ -1001,13 +1003,15 @@ def delete_note(note_id):
         return jsonify({"error": "Unauthorized to delete this note"}), 40
 
     book_id = note.book_id
+    cfi = note.note_range
     # Delete note
     db.session.delete(note)
     db.session.commit()
 
     return jsonify({
         "message": "Note deleted successfully",
-        "book_id": book_id
+        "book_id": book_id,
+        "cfi": cfi
     }), 200
 
 
